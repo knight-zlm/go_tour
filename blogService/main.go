@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/knight-zlm/blog-service/internal/model"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/knight-zlm/blog-service/global"
@@ -55,5 +57,13 @@ func SetUpSetting() error {
 	}
 	global.ServerSetting.ReadTimeout *= time.Second
 	global.ServerSetting.WriteTimeout *= time.Second
+	return nil
+}
+func SetUpDBEngine() error {
+	var err error
+	global.DBEngine, err = model.NewDBEngine(global.DatabaseSetting)
+	if err != nil {
+		return err
+	}
 	return nil
 }
