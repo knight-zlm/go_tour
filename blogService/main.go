@@ -4,7 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
 	"time"
+
+	"github.com/knight-zlm/blog-service/pkg/logger"
+	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/knight-zlm/blog-service/internal/model"
 
@@ -18,7 +22,15 @@ import (
 func init() {
 	err := SetUpSetting()
 	if err != nil {
-		log.Fatalf("init.setupsetting err:%v\n", err)
+		log.Fatalf("init.SetUpSetting err:%v\n", err)
+	}
+	err = SetUpDBEngine()
+	if err != nil {
+		log.Fatalf("init.SetUpDBEngine err:%v\n", err)
+	}
+	err = SetUpLogger()
+	if err != nil {
+		log.Fatalf("init.SetUpLogger err:%v\n", err)
 	}
 	fmt.Printf("%#v\n", global.ServerSetting)
 	fmt.Printf("%#v\n", global.AppSetting)
@@ -65,5 +77,15 @@ func SetUpDBEngine() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func SetUpLogger() error {
+	global.Logger = logger.NewLogger(&lumberjack.Logger{
+		Filename:  path.Join(global.AppSetting.LogSavePath, global.AppSetting.LogFileName) + global.AppSetting.LogFileExt,
+		MaxSize:   600,
+		MaxAge:    10,
+		LocalTime: true,
+	}, "", log.LstdFlags).WithCaller(2)
 	return nil
 }
