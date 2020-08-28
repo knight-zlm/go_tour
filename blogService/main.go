@@ -37,6 +37,10 @@ func init() {
 	fmt.Printf("%#v\n", global.DatabaseSetting)
 }
 
+// @title 博客系统
+// @version 1.0
+// @description go tour
+// @termOfService ok
 func main() {
 	gin.SetMode(global.ServerSetting.RunMode)
 	router := routers.NewRouter()
