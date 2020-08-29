@@ -32,7 +32,7 @@ func (t Article) Get(c *gin.Context) {
 // @Param state query int false "状态"
 // @Param page query int false "页码"
 // @Param page_size query int false "每页数量"
-// @Success 200 {object} model.Article "成功"
+// @Success 200 {object} model.ArticleSwagger "成功"
 // @Failure 400 {object} errcode.Error "请求错误"
 // @Failure 500 {object} errcode.Error "内部错误"
 // @Router /api/v1/articles [get]
