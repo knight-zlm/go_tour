@@ -7,15 +7,13 @@ import (
 	"path"
 	"time"
 
-	"github.com/knight-zlm/blog-service/pkg/logger"
+	"github.com/gin-gonic/gin"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/knight-zlm/blog-service/internal/model"
-
-	"github.com/gin-gonic/gin"
-
 	"github.com/knight-zlm/blog-service/global"
+	"github.com/knight-zlm/blog-service/internal/model"
 	"github.com/knight-zlm/blog-service/internal/routers"
+	"github.com/knight-zlm/blog-service/pkg/logger"
 	"github.com/knight-zlm/blog-service/pkg/setting"
 )
 
@@ -24,7 +22,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("init.SetUpSetting err:%v\n", err)
 	}
-	err = SetUpDBEngine()
+	// err = SetUpDBEngine()
 	if err != nil {
 		log.Fatalf("init.SetUpDBEngine err:%v\n", err)
 	}
