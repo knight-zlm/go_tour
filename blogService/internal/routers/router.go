@@ -2,11 +2,11 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/knight-zlm/blog-service/internal/middleware"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	_ "github.com/knight-zlm/blog-service/docs"
+	"github.com/knight-zlm/blog-service/internal/middleware"
 	v1 "github.com/knight-zlm/blog-service/internal/routers/api/v1"
 )
 
