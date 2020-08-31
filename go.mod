@@ -12,6 +12,7 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/swaggo/gin-swagger v1.2.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
