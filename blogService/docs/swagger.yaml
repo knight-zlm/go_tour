@@ -1,4 +1,13 @@
 definitions:
+  app.Pager:
+    properties:
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_rows:
+        type: integer
+    type: object
   errcode.Error:
     properties:
       code:
@@ -37,6 +46,16 @@ definitions:
       title:
         type: string
     type: object
+  model.ArticleSwagger:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/model.Article'
+        type: array
+      pager:
+        $ref: '#/definitions/app.Pager'
+        type: object
+    type: object
   model.Tag:
     properties:
       created_by:
@@ -57,6 +76,16 @@ definitions:
         type: string
       state:
         type: string
+    type: object
+  model.TagSwagger:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/model.Tag'
+        type: array
+      pager:
+        $ref: '#/definitions/app.Pager'
+        type: object
     type: object
 info:
   contact: {}
@@ -94,7 +123,7 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/model.Article'
+            $ref: '#/definitions/model.ArticleSwagger'
         "400":
           description: 请求错误
           schema:
@@ -288,7 +317,7 @@ paths:
         "200":
           description: 成功
           schema:
-            $ref: '#/definitions/model.Tag'
+            $ref: '#/definitions/model.TagSwagger'
         "400":
           description: 请求错误
           schema:

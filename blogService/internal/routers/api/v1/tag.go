@@ -17,7 +17,7 @@ func NewTag() Tag {
 // @Param state query int false "状态" Enums(0, 1) default(1)
 // @Param page query int false "页码"
 // @Param page_size query int false "每页数量"
-// @Success 200 {object} model.Tag "成功"
+// @Success 200 {object} model.TagSwagger "成功"
 // @Failure 400 {object} errcode.Error "请求错误"
 // @Failure 500 {object} errcode.Error "内部错误"
 // @Router /api/v1/tags [get]
