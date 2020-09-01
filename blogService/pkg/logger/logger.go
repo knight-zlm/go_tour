@@ -167,6 +167,14 @@ func (l *Logger) Warnf(format string, v ...interface{}) {
 	l.WithLevel(LevelWarn).Output(fmt.Sprintf(format, v...))
 }
 
+func (l *Logger) Error(v ...interface{}) {
+	l.WithLevel(LevelError).Output(fmt.Sprint(v...))
+}
+
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.WithLevel(LevelError).Output(fmt.Sprintf(format, v...))
+}
+
 func (l *Logger) Fatal(v ...interface{}) {
 	l.WithLevel(LevelFatal).Output(fmt.Sprint(v...))
 }
