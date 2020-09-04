@@ -30,9 +30,6 @@ func (r *Response) ToResponse(data interface{}) {
 }
 
 func (r *Response) ToResponseList(list interface{}, totalRows int) {
-	//if data != nil {
-	//	data = gin.H{}
-	//}
 	r.Ctx.JSON(http.StatusOK, gin.H{
 		"list": list,
 		"pager": Pager{

@@ -3,6 +3,7 @@ package v1
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/knight-zlm/blog-service/global"
+	"github.com/knight-zlm/blog-service/internal/service"
 	"github.com/knight-zlm/blog-service/pkg/app"
 	"github.com/knight-zlm/blog-service/pkg/errcode"
 )
@@ -27,10 +28,7 @@ func NewTag() Tag {
 // @Failure 500 {object} errcode.Error "内部错误"
 // @Router /api/v1/tags [get]
 func (t Tag) List(c *gin.Context) {
-	param := struct {
-		Name  string `from:"name" binding:"max=100"`
-		State string `from:"state,default=1" binding:"oneof=0 1"`
-	}{}
+	param := service.TagListRequest{}
 	response := app.NewResponse(c)
 	valid, errs := app.BindAndValid(c, &param)
 	if valid {
@@ -38,7 +36,21 @@ func (t Tag) List(c *gin.Context) {
 		response.ToErrorResponse(errcode.InvalidParams.WithDetails(errs.Errors()...))
 		return
 	}
-	response.ToResponse(gin.H{})
+	svc := service.New(c.Request.Context())
+	pager := app.Pager{Page: app.GetPage(c), PageSize: app.GetPageSize(c)}
+	totalRows, err := svc.CountTag(&service.CountTagRequest{Name: param.Name, State: param.State})
+	if err != nil {
+		global.Logger.Errorf("svc.CountTag err:%v", err)
+		response.ToResponse(errcode.ErrorCountTagFail)
+		return
+	}
+	tags, err := svc.GetTagList(&param, &pager)
+	if err != nil {
+		global.Logger.Errorf("svc.GetTagList err:%v", err)
+		response.ToResponse(errcode.ErrorGetTagListFail)
+		return
+	}
+	response.ToResponseList(tags, totalRows)
 	return
 }
 
