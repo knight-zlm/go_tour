@@ -40,6 +40,10 @@ func (s *Service) GetTagList(param *TagListRequest, pager *app.Pager) ([]*model.
 	return s.dao.GetTagList(param.Name, param.State, pager.Page, pager.PageSize)
 }
 
+func (s *Service) CreateTag(param *CreateTagRequest) error {
+	return s.dao.CreateTag(param.Name, param.State, param.CreateBy)
+}
+
 func (s *Service) UpdateTag(param *UpdateTagRequest) error {
 	return s.dao.UpdateTag(param.ID, param.Name, param.State, param.ModifiedBy)
 }
