@@ -11,7 +11,7 @@ type Article struct {
 	CoverImageUrl string `json:"cover_image_url"`
 	CreateBy      string `json:"create_by"`
 	ModifiedBy    string `json:"modified_by"`
-	State         string `json:"state"`
+	State         uint8  `json:"state"`
 }
 
 func (d *Dao) CreateArticle(param *Article) (*model.Article, error) {
