@@ -81,14 +81,14 @@ func (s *Service) GetArticle(param *ArticleRequest) (*Article, error) {
 	}, nil
 }
 
-func (s *Service) GetArticleList(param *ArticleListRequest, pager *app.Pager) ([]*Article, error) {
+func (s *Service) GetArticleList(param *ArticleListRequest, pager *app.Pager) ([]*Article, int, error) {
 	artCount, err := s.dao.CountArticleListByTagID(param.TagID, param.State)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	articles, err := s.dao.GetArticleListByTagID(param.TagID, param.State, pager.Page, pager.PageSize)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	artList := make([]*Article, 0, artCount)
 	for _, article := range articles {
@@ -104,7 +104,7 @@ func (s *Service) GetArticleList(param *ArticleListRequest, pager *app.Pager) ([
 			},
 		})
 	}
-	return artList, nil
+	return artList, artCount, nil
 }
 
 func (s *Service) CreateArticle(param *CreateArticleRequest) error {
