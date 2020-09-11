@@ -17,7 +17,7 @@ const (
 )
 
 type Model struct {
-	ID         uint32 `gorm:"primary_key" json:"id"`
+	ID         uint32 `gorm:"primary_key" json:"id"` // json:"id,omitempty" 可以忽略空值
 	CreatedBy  string `json:"created_by"`
 	ModifiedBy string `json:"modified_by"`
 	CreatedOn  uint32 `json:"created_on"`
