@@ -1,13 +1,17 @@
 package routers
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/knight-zlm/blog-service/global"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	_ "github.com/knight-zlm/blog-service/docs"
 	"github.com/knight-zlm/blog-service/internal/middleware"
 	v1 "github.com/knight-zlm/blog-service/internal/routers/api/v1"
+	"github.com/knight-zlm/blog-service/internal/routers/upload"
 )
 
 func NewRouter() *gin.Engine {
@@ -17,10 +21,12 @@ func NewRouter() *gin.Engine {
 	// url:= ginSwagger.URL("http://127.0.0.1:8008/swagger/doc.json")
 	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.POST("/upload/file", upload.UploadFile)
+	r.StaticFS("/static", http.Dir(global.AppSetting.UploadServerUrl))
+
 	article := v1.NewArticle()
 	tag := v1.NewTag()
 	apiv1 := r.Group("/api/v1")
-
 	{
 		apiv1.POST("/tags", tag.Create)
 		apiv1.DELETE("/tags/:id", tag.Delete)
