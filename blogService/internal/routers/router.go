@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/knight-zlm/blog-service/docs"
 	"github.com/knight-zlm/blog-service/internal/middleware"
+	"github.com/knight-zlm/blog-service/internal/routers/api"
 	v1 "github.com/knight-zlm/blog-service/internal/routers/api/v1"
 	"github.com/knight-zlm/blog-service/internal/routers/upload"
 )
@@ -23,10 +24,13 @@ func NewRouter() *gin.Engine {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	r.POST("/upload/file", upload.UploadFile)
 	r.StaticFS("/static", http.Dir(global.AppSetting.UploadServerUrl))
+	r.GET("/auth", api.GetAuth)
 
 	article := v1.NewArticle()
 	tag := v1.NewTag()
 	apiv1 := r.Group("/api/v1")
+	// 鉴权中间件
+	apiv1.Use(middleware.JWT())
 	{
 		apiv1.POST("/tags", tag.Create)
 		apiv1.DELETE("/tags/:id", tag.Delete)

@@ -26,10 +26,10 @@ App:
 #  From: xxx
 #  To:
 #    - xxx
-#JWT:
-#  Secret: eddycjy
-#  Issuer: blog-service
-#  Expire: 7200
+JWT:
+  Secret: eddycjy
+  Issuer: blog-service
+  Expire: 7200
 Database:
   DBType: mysql
   UserName: root
