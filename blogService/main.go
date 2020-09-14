@@ -81,6 +81,11 @@ func SetUpSetting() error {
 	}
 	global.JWTSetting.Expire *= time.Second
 
+	err = s.ReadSection("Email", &global.EmailSetting)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 func SetUpDBEngine() error {
