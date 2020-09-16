@@ -2,22 +2,37 @@ package routers
 
 import (
 	"net/http"
-
-	"github.com/gin-gonic/gin"
-	"github.com/knight-zlm/blog-service/global"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
+	"time"
 
 	_ "github.com/knight-zlm/blog-service/docs"
+	"github.com/knight-zlm/blog-service/global"
 	"github.com/knight-zlm/blog-service/internal/middleware"
 	"github.com/knight-zlm/blog-service/internal/routers/api"
 	v1 "github.com/knight-zlm/blog-service/internal/routers/api/v1"
 	"github.com/knight-zlm/blog-service/internal/routers/upload"
+	"github.com/knight-zlm/blog-service/pkg/limiter"
+
+	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
+
+var methodLimiter = limiter.NewMethodLimiter().AddBucket(limiter.LimiterBucketRule{
+	Key:          "/auth",
+	FillInterval: time.Second,
+	Capacity:     10,
+	Quantum:      10,
+})
 
 func NewRouter() *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
+	if global.ServerSetting.RunMode == "debug" {
+		r.Use(gin.Logger(), gin.Recovery())
+	} else {
+		r.Use(middleware.AccessLog(), middleware.Recovery())
+	}
+	r.Use(middleware.RateLimiter(methodLimiter))
+	r.Use(middleware.ContextTimeOut(global.AppSetting.DefaultContextTimeout))
 	r.Use(middleware.Translations())
 	// url:= ginSwagger.URL("http://127.0.0.1:8008/swagger/doc.json")
 	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
