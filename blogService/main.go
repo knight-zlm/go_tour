@@ -24,7 +24,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("init.SetUpSetting err:%v\n", err)
 	}
-	//err = SetUpDBEngine()
+	err = SetUpDBEngine()
 	if err != nil {
 		log.Fatalf("init.SetUpDBEngine err:%v\n", err)
 	}
