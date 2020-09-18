@@ -24,14 +24,22 @@ func init() {
 	if err != nil {
 		log.Fatalf("init.SetUpSetting err:%v\n", err)
 	}
+
 	err = SetUpDBEngine()
 	if err != nil {
 		log.Fatalf("init.SetUpDBEngine err:%v\n", err)
 	}
+
 	err = SetUpLogger()
 	if err != nil {
 		log.Fatalf("init.SetUpLogger err:%v\n", err)
 	}
+
+	err = SetupTracer()
+	if err != nil {
+		log.Fatalf("init.SetupTracer err:%v\n", err)
+	}
+
 	fmt.Printf("%#v\n", global.ServerSetting)
 	fmt.Printf("%#v\n", global.AppSetting)
 	fmt.Printf("%#v\n", global.DatabaseSetting)

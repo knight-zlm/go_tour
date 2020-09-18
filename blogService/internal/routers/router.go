@@ -46,7 +46,7 @@ func NewRouter() *gin.Engine {
 	tag := v1.NewTag()
 	apiv1 := r.Group("/api/v1")
 	// 鉴权中间件
-	apiv1.Use(middleware.JWT())
+	//apiv1.Use(middleware.JWT())
 	{
 		apiv1.POST("/tags", tag.Create)
 		apiv1.DELETE("/tags/:id", tag.Delete)

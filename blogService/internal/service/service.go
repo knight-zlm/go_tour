@@ -16,6 +16,6 @@ type Service struct {
 
 func New(c context.Context) Service {
 	svc := Service{ctx: c}
-	svc.dao = dao.New(otgorm.WithContext(c, global.DBEngine))
+	svc.dao = dao.New(otgorm.WithContext(svc.ctx, global.DBEngine))
 	return svc
 }
