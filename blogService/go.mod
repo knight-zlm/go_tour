@@ -36,7 +36,7 @@ require (
 	github.com/uber/jaeger-lib v2.2.0+incompatible // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
-	golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6 // indirect
+	golang.org/x/sys v0.0.0-20200918174421-af09f7315aff // indirect
 	golang.org/x/tools v0.0.0-20200827191138-3c805d2368cd // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

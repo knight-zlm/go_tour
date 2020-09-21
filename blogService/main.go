@@ -1,13 +1,13 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"path"
+	"strings"
 	"time"
-
-	"github.com/knight-zlm/blog-service/pkg/tracer"
 
 	"github.com/gin-gonic/gin"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -17,9 +17,19 @@ import (
 	"github.com/knight-zlm/blog-service/internal/routers"
 	"github.com/knight-zlm/blog-service/pkg/logger"
 	"github.com/knight-zlm/blog-service/pkg/setting"
+	"github.com/knight-zlm/blog-service/pkg/tracer"
+)
+
+var (
+	port    string
+	runMode string
+	config  string
 )
 
 func init() {
+	// 读取命令行配置
+	SetupFlag()
+
 	err := SetUpSetting()
 	if err != nil {
 		log.Fatalf("init.SetUpSetting err:%v\n", err)
@@ -63,7 +73,7 @@ func main() {
 }
 
 func SetUpSetting() error {
-	s, err := setting.NewSetting()
+	s, err := setting.NewSetting(strings.Split(config, ",")...)
 	if err != nil {
 		return err
 	}
@@ -74,6 +84,12 @@ func SetUpSetting() error {
 	}
 	global.ServerSetting.ReadTimeout *= time.Second
 	global.ServerSetting.WriteTimeout *= time.Second
+	if port != "" {
+		global.ServerSetting.HttpPort = port
+	}
+	if runMode != "" {
+		global.ServerSetting.RunMode = runMode
+	}
 
 	err = s.ReadSection("App", &global.AppSetting)
 	if err != nil {
@@ -124,4 +140,11 @@ func SetupTracer() error {
 	}
 	global.Tracer = jaegerTracer
 	return nil
+}
+
+func SetupFlag() {
+	flag.StringVar(&port, "port", "", "启动端口")
+	flag.StringVar(&runMode, "mode", "", "启动模式")
+	flag.StringVar(&config, "config", "configs/", "指定要使用的配置文件路径")
+	flag.Parse()
 }
