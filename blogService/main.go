@@ -24,6 +24,11 @@ var (
 	port    string
 	runMode string
 	config  string
+
+	isVersion    bool
+	buildTime    string
+	buildVersion string
+	gitCommitID  string
 )
 
 func init() {
@@ -60,6 +65,14 @@ func init() {
 // @description go tour
 // @termOfService ok
 func main() {
+	// 配合 -ldflags 使用
+	// go build -ldflags "-X main.buildTime=`date +%Y-%m-%d,%H:%M:%S` -X main.buildVersion=1.0.0 -X main.gitCommitID=`git rev-parse HEAD`"
+	if isVersion {
+		fmt.Printf("build_time:%s", buildTime)
+		fmt.Printf("build_version:%s", buildVersion)
+		fmt.Printf("git_commit_id:%s", gitCommitID)
+		return
+	}
 	gin.SetMode(global.ServerSetting.RunMode)
 	router := routers.NewRouter()
 	s := &http.Server{
@@ -146,5 +159,6 @@ func SetupFlag() {
 	flag.StringVar(&port, "port", "", "启动端口")
 	flag.StringVar(&runMode, "mode", "", "启动模式")
 	flag.StringVar(&config, "config", "configs/", "指定要使用的配置文件路径")
+	flag.BoolVar(&isVersion, "version", false, "编译信息")
 	flag.Parse()
 }
