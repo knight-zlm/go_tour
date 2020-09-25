@@ -12,4 +12,7 @@ message HelloReply{
 
 service Greeter{
   rpc SayHello(HelloRequest) returns (HelloReply){}
+  rpc SayList(HelloRequest) returns (stream HelloReply){}
+  rpc SayRecord(stream HelloRequest) returns(HelloReply){}
+  rpc SayRoute(stream HelloRequest) returns (stream HelloReply) {}
 }
