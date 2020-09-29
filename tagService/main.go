@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	pb "github.com/knight-zlm/tag-service/proto"
 	"github.com/knight-zlm/tag-service/server"
@@ -14,7 +15,7 @@ import (
 var port string
 
 func init() {
-	flag.StringVar(&port, "p", "8008", "启动端口号")
+	flag.StringVar(&port, "p", "8009", "启动端口号")
 	flag.Parse()
 }
 
@@ -22,6 +23,7 @@ func init() {
 func main() {
 	s := grpc.NewServer()
 	pb.RegisterTagServiceServer(s, server.NewTagServer())
+	reflection.Register(s)
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
