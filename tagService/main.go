@@ -6,6 +6,8 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/soheilhy/cmux"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -14,54 +16,52 @@ import (
 )
 
 var (
-	grpcPort string
-	httpPort string
+	port string
 )
 
 func init() {
-	flag.StringVar(&grpcPort, "grpc_port", "8009", "grpc启动端口号")
-	flag.StringVar(&httpPort, "http_port", "9009", "http启动端口号")
+	flag.StringVar(&port, "port", "8003", "启动端口号")
 	flag.Parse()
 }
 
 //protoc --go_out=plugins=grpc:. ./proto/*.proto 编译proto
 func main() {
-	errsChan := make(chan error)
-	go func() {
-		err := RunHttpServer(httpPort)
-		if err != nil {
-			errsChan <- err
-		}
-	}()
-	go func() {
-		err := RunGrpcServer(grpcPort)
-		if err != nil {
-			errsChan <- err
-		}
-	}()
+	l, err := RunTcpServer(port)
+	if err != nil {
+		log.Fatalf("Run tcp Server err:%v", err)
+	}
+	m := cmux.New(l)
+	grpcL := m.MatchWithWriters(cmux.HTTP2MatchHeaderFieldPrefixSendSettings("content-type", "application/grpc"))
+	httpL := m.Match(cmux.HTTP1Fast())
+	grpcS := RunGrpcServer(port)
+	httpS := RunHttpServer(port)
+	go grpcS.Serve(grpcL)
+	go httpS.Serve(httpL)
 
-	select {
-	case err := <-errsChan:
-		log.Fatalf("Run Server err: %v", err)
+	err = m.Serve()
+	if err != nil {
+		log.Fatalf("Run Server err:%v", err)
 	}
 }
 
-func RunHttpServer(port string) error {
+func RunTcpServer(port string) (net.Listener, error) {
+	return net.Listen("tcp", ":"+port)
+}
+
+func RunHttpServer(port string) *http.Server {
 	serveMux := http.NewServeMux()
 	serveMux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`pong`))
 	})
-	return http.ListenAndServe(":"+port, serveMux)
+	return &http.Server{
+		Addr:    ":" + port,
+		Handler: serveMux,
+	}
 }
 
-func RunGrpcServer(port string) error {
+func RunGrpcServer(port string) *grpc.Server {
 	s := grpc.NewServer()
 	pb.RegisterTagServiceServer(s, server.NewTagServer())
 	reflection.Register(s)
-	lis, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		return err
-	}
-
-	return s.Serve(lis)
+	return s
 }
