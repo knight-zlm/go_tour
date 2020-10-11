@@ -3,6 +3,7 @@ syntax = "proto3";
 package proto;
 
 import "proto/common.proto";
+import "google/api/annotations.proto";
 
 message GetTagListRequest{
   string name = 1;
@@ -21,5 +22,9 @@ message GetTagListReply{
 }
 
 service TagService{
-  rpc GetTagList(GetTagListRequest)returns(GetTagListReply){};
+  rpc GetTagList(GetTagListRequest)returns(GetTagListReply){
+    option (google.api.http) = {
+      get: "/api/v1/tags"
+    };
+  };
 }

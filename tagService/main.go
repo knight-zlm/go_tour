@@ -25,6 +25,8 @@ func init() {
 }
 
 //protoc --go_out=plugins=grpc:. ./proto/*.proto 编译proto
+// 添加支持JSON api的功能，需要google/api https://github.com/aspnet/AspLabs/tree/12d388c1964c8844dcbbdcd643f8bd7c6423a4c4/src/GrpcHttpApi/sample/Proto/google/api
+//protoc -I/usr/local/include -I. -I$GOPATH/src -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gatewat_out=logtostderr=true:. ./proto/*.proto
 func main() {
 	l, err := RunTcpServer(port)
 	if err != nil {
