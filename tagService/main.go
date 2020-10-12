@@ -5,6 +5,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
+
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	"github.com/soheilhy/cmux"
 
@@ -20,7 +24,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&port, "port", "8003", "启动端口号")
+	flag.StringVar(&port, "port", "8004", "启动端口号")
 	flag.Parse()
 }
 
@@ -44,6 +48,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("Run Server err:%v", err)
 	}
+}
+
+func grpcHandlerFunc(grpcServer *grpc.Server, otherHandler http.Handler) http.Handler {
+	return h2c.NewHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get("Content-Type"), "application/grpc") {
+			grpcServer.ServeHTTP(w, r)
+		} else {
+			otherHandler.ServeHTTP(w, r)
+		}
+	}), &http2.Server{})
 }
 
 func RunTcpServer(port string) (net.Listener, error) {
