@@ -13,7 +13,9 @@ import (
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/knight-zlm/tag-service/proto"
 	"github.com/knight-zlm/tag-service/server"
@@ -22,6 +24,11 @@ import (
 var (
 	port string
 )
+
+type httpError struct {
+	Code    int32  `json:",omitempty"`
+	Message string `json:"message,omitempty"`
+}
 
 func init() {
 	flag.StringVar(&port, "port", "8004", "启动端口号")
@@ -115,6 +122,20 @@ func runGrpcGatewayServer() *runtime.ServeMux {
 	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
 
 	return gwmux
+}
+
+func grpcGatewayError(ctx context.Context, _ *runtime.ServeMux, marshaler runtime.Marshaler, w http.ResponseWriter, _ *http.Request, err error) {
+	s, ok := status.FromError(err)
+	if !ok {
+		s = status.New(codes.Unknown, err.Error())
+	}
+	httpError := httpError{Code: int32(s.Code()), Message: s.Message()}
+	details := s.Details()
+	for _, detail := range details {
+		if v, ok := detail.(*pb.Error); ok {
+
+		}
+	}
 }
 
 func RunServer(port string) error {
