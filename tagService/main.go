@@ -1,17 +1,17 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/soheilhy/cmux"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
-
-	"github.com/soheilhy/cmux"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -30,8 +30,17 @@ func init() {
 
 //protoc --go_out=plugins=grpc:. ./proto/*.proto 编译proto
 // 添加支持JSON api的功能，需要google/api https://github.com/aspnet/AspLabs/tree/12d388c1964c8844dcbbdcd643f8bd7c6423a4c4/src/GrpcHttpApi/sample/Proto/google/api
-//protoc -I/usr/local/include -I. -I$GOPATH/src -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gatewat_out=logtostderr=true:. ./proto/*.proto
+//protoc -I/usr/local/include -I. -I$GOPATH/src -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis --grpc-gateway_out=logtostderr=true:. ./proto/*.proto
+// 同方法双流量支持
 func main() {
+	err := RunServer(port)
+	if err != nil {
+		log.Fatalf("Run Server err:%v", err)
+	}
+}
+
+// tcp连接多路复用
+func mainTcpMux() {
 	l, err := RunTcpServer(port)
 	if err != nil {
 		log.Fatalf("Run tcp Server err:%v", err)
@@ -80,4 +89,39 @@ func RunGrpcServer(port string) *grpc.Server {
 	pb.RegisterTagServiceServer(s, server.NewTagServer())
 	reflection.Register(s)
 	return s
+}
+
+func runHttpServer() *http.ServeMux {
+	serverMux := http.NewServeMux()
+	serverMux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`pong`))
+	})
+
+	return serverMux
+}
+
+func runGrpcServer() *grpc.Server {
+	s := grpc.NewServer()
+	pb.RegisterTagServiceServer(s, server.NewTagServer())
+	reflection.Register(s)
+
+	return s
+}
+
+func runGrpcGatewayServer() *runtime.ServeMux {
+	endpoint := "0.0.0.0:" + port
+	gwmux := runtime.NewServeMux()
+	dopts := []grpc.DialOption{grpc.WithInsecure()}
+	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
+
+	return gwmux
+}
+
+func RunServer(port string) error {
+	httpMux := runHttpServer()
+	grpcS := runGrpcServer()
+	gatewayMux := runGrpcGatewayServer()
+	httpMux.Handle("/", gatewayMux)
+
+	return http.ListenAndServe(":"+port, grpcHandlerFunc(grpcS, httpMux))
 }
