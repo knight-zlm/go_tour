@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"log"
 	"net"
@@ -117,6 +118,7 @@ func runGrpcServer() *grpc.Server {
 
 func runGrpcGatewayServer() *runtime.ServeMux {
 	endpoint := "0.0.0.0:" + port
+	runtime.HTTPError = grpcGatewayError
 	gwmux := runtime.NewServeMux()
 	dopts := []grpc.DialOption{grpc.WithInsecure()}
 	_ = pb.RegisterTagServiceHandlerFromEndpoint(context.Background(), gwmux, endpoint, dopts)
@@ -133,9 +135,15 @@ func grpcGatewayError(ctx context.Context, _ *runtime.ServeMux, marshaler runtim
 	details := s.Details()
 	for _, detail := range details {
 		if v, ok := detail.(*pb.Error); ok {
-
+			httpError.Code = v.Code
+			httpError.Message = v.Message
 		}
 	}
+
+	resp, _ := json.Marshal(httpError)
+	w.Header().Set("Content-type", marshaler.ContentType())
+	w.WriteHeader(runtime.HTTPStatusFromCode(s.Code()))
+	_, _ = w.Write(resp)
 }
 
 func RunServer(port string) error {
