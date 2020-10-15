@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/eddycjy/opentracing-gorm v0.0.0-20200209122056-516a807d2182 // indirect
+	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/gin-gonic/gin v1.5.0 // indirect
 	github.com/go-playground/validator/v10 v10.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
