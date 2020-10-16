@@ -130,8 +130,25 @@ func runHttpServer() *http.ServeMux {
 	return serverMux
 }
 
+/**
+服务端一元拦截器，
+ctx RPC上下文
+req 请求参数
+rpc方法的所有信息
+rpc 方法本身
+*/
+func HelloInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	log.Println("你好！")
+	resp, err := handler(ctx, req)
+	log.Println("再见！")
+	return resp, err
+}
+
 func runGrpcServer() *grpc.Server {
-	s := grpc.NewServer()
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(HelloInterceptor),
+	}
+	s := grpc.NewServer(opts...)
 	pb.RegisterTagServiceServer(s, server.NewTagServer())
 	reflection.Register(s)
 
