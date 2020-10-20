@@ -11,9 +11,7 @@ import (
 	"strings"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
-	"github.com/knight-zlm/tag-service/pkg/swagger"
-
-	"github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/net/http2"
@@ -23,6 +21,8 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
+	"github.com/knight-zlm/tag-service/internal/middleware"
+	"github.com/knight-zlm/tag-service/pkg/swagger"
 	pb "github.com/knight-zlm/tag-service/proto"
 	"github.com/knight-zlm/tag-service/server"
 )
@@ -159,6 +159,9 @@ func runGrpcServer() *grpc.Server {
 		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
 			HelloInterceptor,
 			WorldInterceptor,
+			middleware.AccessLog,
+			middleware.ErrorLog,
+			middleware.Recovery,
 		)),
 	}
 	s := grpc.NewServer(opts...)
