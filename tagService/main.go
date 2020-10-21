@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	assetfs "github.com/elazarl/go-bindata-assetfs"
-	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/soheilhy/cmux"
 	"golang.org/x/net/http2"
@@ -156,7 +156,7 @@ func WorldInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 func runGrpcServer() *grpc.Server {
 	opts := []grpc.ServerOption{
 		//grpc.UnaryInterceptor(HelloInterceptor),
-		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+		grpc.UnaryInterceptor(grpcMiddleware.ChainUnaryServer(
 			HelloInterceptor,
 			WorldInterceptor,
 			middleware.AccessLog,

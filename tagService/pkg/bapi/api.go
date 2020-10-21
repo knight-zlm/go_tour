@@ -5,7 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+
+	"google.golang.org/grpc/metadata"
+
+	"golang.org/x/net/context/ctxhttp"
 )
 
 const (
@@ -26,7 +31,8 @@ func NewAPI(url string) *API {
 }
 
 func (a *API) httpGet(ctx context.Context, path string) ([]byte, error) {
-	resp, err := http.Get(fmt.Sprintf("%s/%s", a.URL, path))
+	resp, err := ctxhttp.Get(ctx, http.DefaultClient, fmt.Sprintf("%s/%s", a.URL, path))
+	//resp, err := http.Get(fmt.Sprintf("%s/%s", a.URL, path))
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +43,7 @@ func (a *API) httpGet(ctx context.Context, path string) ([]byte, error) {
 }
 
 func (a *API) getAccessToken(ctx context.Context) (string, error) {
+	// 调用第三方需要设置超时时间
 	body, err := a.httpGet(ctx, fmt.Sprintf("%s?app_key=%s&app_secret=%s", "auth", APPKey, APPSecret))
 	if err != nil {
 		return "", err
@@ -48,11 +55,14 @@ func (a *API) getAccessToken(ctx context.Context) (string, error) {
 }
 
 func (a *API) GetTagList(ctx context.Context, name string) ([]byte, error) {
+	// 调用第三方需要设置超时时间
 	token, err := a.getAccessToken(ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	md, _ := metadata.FromIncomingContext(ctx)
+	log.Printf("md: %+v", md)
 	body, err := a.httpGet(ctx, fmt.Sprintf("%s?token=%s&name=%s", "api/v1/tags", token, name))
 	if err != nil {
 		return nil, err
