@@ -16,11 +16,29 @@ import (
 	"google.golang.org/grpc"
 )
 
+type Auth struct {
+	AppKey    string
+	AppSecret string
+}
+
+func (a *Auth) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{"app_key": a.AppKey, "app_secret": a.AppSecret}, nil
+}
+
+func (a *Auth) RequireTransportSecurity() bool {
+	return false
+}
+
 func main() {
+	auth := Auth{
+		AppKey:    "go_tour",
+		AppSecret: "zlm",
+	}
 	ctx := context.Background()
+	opts := []grpc.DialOption{grpc.WithPerRPCCredentials(&auth)}
 	md := metadata.New(map[string]string{"go": "programming", "tour": "book"})
 	newCtx := metadata.NewOutgoingContext(ctx, md)
-	clientConn, err := GetClientConn(newCtx, "localhost:8004", nil)
+	clientConn, err := GetClientConn(newCtx, "localhost:8004", opts)
 	if err != nil {
 		log.Fatalf("err: %v\n", err)
 	}
