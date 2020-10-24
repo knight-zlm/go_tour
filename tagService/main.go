@@ -21,6 +21,7 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
+	"github.com/knight-zlm/blog-service/pkg/tracer"
 	"github.com/knight-zlm/tag-service/internal/middleware"
 	"github.com/knight-zlm/tag-service/pkg/swagger"
 	pb "github.com/knight-zlm/tag-service/proto"
@@ -39,6 +40,15 @@ type httpError struct {
 func init() {
 	flag.StringVar(&port, "port", "8004", "启动端口号")
 	flag.Parse()
+}
+
+func setupTracer() error {
+	jaegerTracer, _, err := tracer.NewJaegerTracer("tour-service", "127.0.0.1:6831")
+	if err != nil {
+		return err
+	}
+	global.Tracer = jaegerTracer
+	return nil
 }
 
 //protoc --go_out=plugins=grpc:. ./proto/*.proto 编译proto
