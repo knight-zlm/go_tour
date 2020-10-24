@@ -21,9 +21,10 @@ import (
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 
-	"github.com/knight-zlm/blog-service/pkg/tracer"
+	"github.com/knight-zlm/tag-service/global"
 	"github.com/knight-zlm/tag-service/internal/middleware"
 	"github.com/knight-zlm/tag-service/pkg/swagger"
+	"github.com/knight-zlm/tag-service/pkg/tracer"
 	pb "github.com/knight-zlm/tag-service/proto"
 	"github.com/knight-zlm/tag-service/server"
 )
@@ -40,6 +41,11 @@ type httpError struct {
 func init() {
 	flag.StringVar(&port, "port", "8004", "启动端口号")
 	flag.Parse()
+
+	err := setupTracer()
+	if err != nil {
+		log.Fatalf("init.setupTracer err: %v", err)
+	}
 }
 
 func setupTracer() error {

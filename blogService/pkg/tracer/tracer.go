@@ -4,7 +4,7 @@ import (
 	"io"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go"
 	"github.com/uber/jaeger-client-go/config"
 )
 
