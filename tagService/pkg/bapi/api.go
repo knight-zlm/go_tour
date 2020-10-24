@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
+
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 
 	"google.golang.org/grpc/metadata"
-
-	"golang.org/x/net/context/ctxhttp"
 )
 
 const (
@@ -31,14 +33,36 @@ func NewAPI(url string) *API {
 }
 
 func (a *API) httpGet(ctx context.Context, path string) ([]byte, error) {
-	resp, err := ctxhttp.Get(ctx, http.DefaultClient, fmt.Sprintf("%s/%s", a.URL, path))
-	//resp, err := http.Get(fmt.Sprintf("%s/%s", a.URL, path))
+	url := fmt.Sprintf("%s/%s", a.URL, path)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	span, newCtx := opentracing.StartSpanFromContext(
+		ctx, "HTTP GET: "+a.URL,
+		opentracing.Tag{Key: string(ext.Component), Value: "HTTP"})
+	span.SetTag("url", url)
+	_ = opentracing.GlobalTracer().Inject(
+		span.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header),
+	)
+	req = req.WithContext(newCtx)
+	client := http.Client{Timeout: time.Second * 60}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	defer span.Finish()
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	// 读取数据
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
 	return body, nil
 }
 

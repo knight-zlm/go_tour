@@ -4,6 +4,14 @@ import (
 	"context"
 	"time"
 
+	"github.com/knight-zlm/tag-service/global"
+	"github.com/knight-zlm/tag-service/pkg/metatext"
+	"google.golang.org/grpc/metadata"
+
+	"github.com/opentracing/opentracing-go/ext"
+
+	"github.com/opentracing/opentracing-go"
+
 	"google.golang.org/grpc"
 )
 
@@ -36,5 +44,37 @@ func StreamContextTimeout() grpc.StreamClientInterceptor {
 		}
 
 		return streamer(ctx, desc, cc, method, opts...)
+	}
+}
+
+func ClientTracing() grpc.UnaryClientInterceptor {
+	return func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		var (
+			parentCtx  opentracing.SpanContext
+			spanOpts   []opentracing.StartSpanOption
+			parentSpan = opentracing.SpanFromContext(ctx)
+		)
+
+		if parentSpan != nil {
+			parentCtx = parentSpan.Context()
+			spanOpts = append(spanOpts, opentracing.ChildOf(parentCtx))
+		}
+		spanOpts = append(spanOpts, []opentracing.StartSpanOption{
+			opentracing.Tag{Key: string(ext.Component), Value: "gRpc"},
+			ext.SpanKindRPCClient,
+		}...)
+
+		span := global.Tracer.StartSpan(method, spanOpts...)
+		defer span.Finish()
+
+		md, ok := metadata.FromOutgoingContext(ctx)
+		if !ok {
+			md = metadata.New(nil)
+		}
+
+		_ = global.Tracer.Inject(span.Context(), opentracing.TextMap, metatext.MetadataTextMap{MD: md})
+		newCtx := opentracing.ContextWithSpan(metadata.NewOutgoingContext(ctx, md), span)
+		return invoker(newCtx, method, req, reply, cc, opts...)
+
 	}
 }

@@ -162,6 +162,7 @@ func runGrpcServer() *grpc.Server {
 			middleware.AccessLog,
 			middleware.ErrorLog,
 			middleware.Recovery,
+			middleware.ServerTracing,
 		)),
 	}
 	s := grpc.NewServer(opts...)

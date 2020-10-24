@@ -67,6 +67,7 @@ func main1() {
 				),
 			),
 			middleware.UnaryContextTimeout(),
+			middleware.ClientTracing(),
 		),
 	))
 	clientConn, err := GetClientConn(newCtx, "localhost:8004", opts)
