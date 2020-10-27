@@ -4,11 +4,11 @@ go 1.14
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.0.0 // indirect
+	github.com/coreos/etcd v3.3.25+incompatible // indirect
 	github.com/elazarl/go-bindata-assetfs v1.0.1
 	github.com/golang/protobuf v1.4.2
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway v1.15.2
-	github.com/jaegertracing/jaeger-client-go v2.25.0+incompatible // indirect
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/soheilhy/cmux v0.1.4
 	github.com/uber/jaeger-client-go v2.25.0+incompatible
