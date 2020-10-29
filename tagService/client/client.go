@@ -6,8 +6,6 @@ import (
 	"log"
 	"time"
 
-	"google.golang.org/grpc/resolver"
-
 	pb "github.com/knight-zlm/tag-service/proto"
 
 	"github.com/coreos/etcd/clientv3"
@@ -16,7 +14,6 @@ import (
 	grpcRetry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/knight-zlm/tag-service/internal/middleware"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 )
@@ -105,10 +102,10 @@ func GetClientConn2(ctx context.Context, serverName string, opts []grpc.DialOpti
 		return nil, err
 	}
 
-	r := naming.GRPCResolver{Client: cli}
+	r := &naming.GRPCResolver{Client: cli}
 	target := fmt.Sprintf("/etcdv3://go_tour/grpc/%s", serverName)
-	resolve, _ := r.Resolve(target)
-	resolver.Register(resolve)
-	opts = append(opts, grpc.WithInsecure(), grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithBlock())
+	//resolve, _ := r.Resolve(target)
+	//resolver.Register(resolve)
+	opts = append(opts, grpc.WithInsecure(), grpc.WithBalancer(grpc.RoundRobin(r)), grpc.WithBlock())
 	return grpc.DialContext(ctx, target, opts...)
 }
