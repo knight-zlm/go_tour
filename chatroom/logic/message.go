@@ -46,3 +46,47 @@ func NewMessage(user *User, content, clientTime string) *Message {
 
 	return message
 }
+
+func NewWelcomeMessage(user *User) *Message {
+	msg := &Message{
+		User:    user,
+		Type:    MsgTypeWelcome,
+		Content: user.NickName + " 您好，欢迎加入了聊天室！",
+		MsgTime: time.Now(),
+	}
+
+	return msg
+}
+
+func NewUserEnterMessage(user *User) *Message {
+	msg := &Message{
+		User:    user,
+		Type:    MsgTypeUseEnter,
+		Content: user.NickName + " 加入了聊天室",
+		MsgTime: time.Now(),
+	}
+
+	return msg
+}
+
+func NewUserLeaveMessage(user *User) *Message {
+	msg := &Message{
+		User:    user,
+		Type:    MsgTypeUseLeave,
+		Content: user.NickName + " 离开了聊天室",
+		MsgTime: time.Now(),
+	}
+
+	return msg
+}
+
+func NewErrorMessage(content string) *Message {
+	msg := &Message{
+		User:    System,
+		Type:    MsgTypeError,
+		Content: content,
+		MsgTime: time.Now(),
+	}
+
+	return msg
+}

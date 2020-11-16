@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/knight-zlm/chatroom/logic"
+
 	"nhooyr.io/websocket"
 	"nhooyr.io/websocket/wsjson"
 )
@@ -28,4 +30,15 @@ func WebSocketHandleFunc(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	user := logic.NewUser(conn, nickname, req.RemoteAddr)
+
+	// 2. 开启给用户发消息的goroutine
+	go user.SendMessage(req.Context())
+
+	// 3.给新用户发送欢迎消息
+	user.MessageChan <- logic.NewWelcomeMessage(user)
+
+	// 向所有用户告知新用户到来
+	msg := logic.NewUserEnterMessage(user)
+	logic.Broadcaster.Broadcast(msg)
 }
