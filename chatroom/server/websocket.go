@@ -41,4 +41,11 @@ func WebSocketHandleFunc(w http.ResponseWriter, req *http.Request) {
 	// 向所有用户告知新用户到来
 	msg := logic.NewUserEnterMessage(user)
 	logic.Broadcaster.Broadcast(msg)
+
+	// 4. 将该用户加入广播器的用户列表
+	logic.Broadcaster.UserEntering(user)
+	log.Println("user:", nickname, "joins chat")
+
+	// 5.接收用户消息
+	err = user.ReceiveMessage(req.Context())
 }

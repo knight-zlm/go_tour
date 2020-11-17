@@ -7,6 +7,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
+	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -69,6 +71,38 @@ func NewUser(conn *websocket.Conn, nickName, addr string) *User {
 func (u *User) SendMessage(ctx context.Context) {
 	for msg := range u.MessageChan {
 		wsjson.Write(ctx, u.conn, msg)
+	}
+}
+
+func (u *User) ReceiveMessage(ctx context.Context) error {
+	var (
+		receiveMsg map[string]string
+		err        error
+	)
+	for {
+		err = wsjson.Read(ctx, u.conn, &receiveMsg)
+		if err != nil {
+			// 判断链接是否关闭，正常关闭，不算错误
+			var closeErr websocket.CloseError
+			if errors.As(err, &closeErr) {
+				return nil
+			} else if errors.Is(err, io.EOF) {
+				return nil
+			}
+			return err
+		}
+
+		// 发送内容到聊天室
+		sendMsg := NewMessage(u, receiveMsg["content"], receiveMsg["send_time"])
+		// 过滤敏感词汇
+		//sendMsg.Content = FilterSensitive(sendMsg.Content)
+
+		// 解析content 看看@了谁
+		req := regexp.MustCompile(`@[^\s@]{2,20}`)
+		sendMsg.Act = req.FindAllString(sendMsg.Content, -1)
+
+		//广播消息
+		Broadcaster.Broadcast(sendMsg)
 	}
 }
 
