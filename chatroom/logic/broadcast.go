@@ -14,7 +14,7 @@ type broadcaster struct {
 
 	// 判断昵称是否可以进入聊天室（重复与否）：true能，false不能
 	checkUserChan      chan string
-	checkUserCanInChan chan bool
+	checkUserCanInChan chan bool //用来回传昵称是否存在结果的
 
 	//获取用户列表
 	requestUsersChan chan struct{}
@@ -32,6 +32,13 @@ var Broadcaster = &broadcaster{
 	usersChan:          make(chan []*User),
 }
 
+// 判断是否可以进入聊天室（昵称是否重复）
+func (b *broadcaster) CanEnterRoom(nickname string) bool {
+	b.checkUserChan <- nickname
+
+	return <-b.checkUserCanInChan
+}
+
 // 广播消息
 func (b *broadcaster) Broadcast(msg *Message) {
 	if len(b.messageChan) > 1024 {
@@ -45,4 +52,9 @@ func (b *broadcaster) Broadcast(msg *Message) {
 // 用户进入通知
 func (b *broadcaster) UserEntering(u *User) {
 	b.enteringChan <- u
+}
+
+// 用户离开
+func (b *broadcaster) UserLeaving(u *User) {
+	b.leavingChan <- u
 }

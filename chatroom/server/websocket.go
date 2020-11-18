@@ -30,6 +30,13 @@ func WebSocketHandleFunc(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if !logic.Broadcaster.CanEnterRoom(nickname) {
+		log.Println("昵称已经存在：", nickname)
+		wsjson.Write(req.Context(), conn, logic.NewErrorMessage("该昵称已经存在！"))
+		conn.Close(websocket.StatusUnsupportedData, "nickname exists")
+		return
+	}
+
 	user := logic.NewUser(conn, nickname, req.RemoteAddr)
 
 	// 2. 开启给用户发消息的goroutine
@@ -48,4 +55,18 @@ func WebSocketHandleFunc(w http.ResponseWriter, req *http.Request) {
 
 	// 5.接收用户消息
 	err = user.ReceiveMessage(req.Context())
+
+	// 6.用户离开
+	logic.Broadcaster.UserLeaving(user)
+	msg = logic.NewUserLeaveMessage(user)
+	logic.Broadcaster.Broadcast(msg)
+	log.Println("user:", nickname, "leaves chat")
+
+	// 根据不同错误执行不同case
+	if err == nil {
+		conn.Close(websocket.StatusNormalClosure, "")
+	} else {
+		log.Println("read from client error:", err)
+		conn.Close(websocket.StatusInternalError, "Read from client error")
+	}
 }

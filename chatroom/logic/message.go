@@ -12,6 +12,7 @@ const (
 	MsgTypeUseEnter        // 用户进入
 	MsgTypeUseLeave        // 用户退出
 	MsgTypeError           // 错误消息
+	MsgTypeUserList        // 发送当前用户列表
 )
 
 // 发给用户的消息
@@ -29,7 +30,8 @@ type Message struct {
 	Act []string `json:"act"`
 
 	// 用户列表
-	Users []*User `json:"users"`
+	Users map[string]*User `json:"users"`
+	//Users []*User `json:"users"`
 }
 
 func NewMessage(user *User, content, clientTime string) *Message {
