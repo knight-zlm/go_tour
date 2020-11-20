@@ -106,6 +106,10 @@ func (u *User) ReceiveMessage(ctx context.Context) error {
 	}
 }
 
+func (u *User) CloseMessageChan() {
+	close(u.MessageChan)
+}
+
 func parseTokenAndValidate(token, nickName string) (int, error) {
 	pos := strings.LastIndex(token, "uid")
 	messageMAC, err := base64.StdEncoding.DecodeString(token[:pos])

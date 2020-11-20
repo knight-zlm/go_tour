@@ -32,6 +32,44 @@ var Broadcaster = &broadcaster{
 	usersChan:          make(chan []*User),
 }
 
+func (b *broadcaster) Start() {
+	for {
+		select {
+		case user := <-b.enteringChan:
+			//新用户进入
+			b.users[user.NickName] = user
+
+			b.sendUserList()
+		case user := <-b.leavingChan:
+			//用户离开
+			delete(b.users, user.NickName)
+			//避免goroutine泄漏
+			user.CloseMessageChan()
+
+			b.sendUserList()
+		case msg := <-b.messageChan:
+			//给所有在线的用户发消息
+			for _, user := range b.users {
+				if user.UID == msg.User.UID {
+					continue
+				}
+				user.MessageChan <- msg
+			}
+		case nickName := <-b.checkUserChan:
+			if _, ok := b.users[nickName]; ok {
+				b.checkUserCanInChan <- false
+			} else {
+				b.checkUserCanInChan <- true
+			}
+		}
+	}
+}
+
+//刷新用户列表信息
+func (b *broadcaster) sendUserList() {
+
+}
+
 // 判断是否可以进入聊天室（昵称是否重复）
 func (b *broadcaster) CanEnterRoom(nickname string) bool {
 	b.checkUserChan <- nickname
