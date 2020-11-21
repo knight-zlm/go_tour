@@ -48,12 +48,20 @@ func (b *broadcaster) Start() {
 
 			b.sendUserList()
 		case msg := <-b.messageChan:
-			//给所有在线的用户发消息
-			for _, user := range b.users {
-				if user.UID == msg.User.UID {
-					continue
+			if msg.To == "" {
+				//给所有在线的用户发消息
+				for _, user := range b.users {
+					if user.UID == msg.User.UID {
+						continue
+					}
+					user.MessageChan <- msg
 				}
-				user.MessageChan <- msg
+			} else {
+				if user, ok := b.users[msg.To]; ok {
+					user.MessageChan <- msg
+				} else {
+					log.Println("user: ", msg.To, " not exists!")
+				}
 			}
 		case nickName := <-b.checkUserChan:
 			if _, ok := b.users[nickName]; ok {

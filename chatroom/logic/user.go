@@ -95,7 +95,12 @@ func (u *User) ReceiveMessage(ctx context.Context) error {
 		// 发送内容到聊天室
 		sendMsg := NewMessage(u, receiveMsg["content"], receiveMsg["send_time"])
 		// 过滤敏感词汇
-		//sendMsg.Content = FilterSensitive(sendMsg.Content)
+		sendMsg.Content = FilterSensitive(sendMsg.Content)
+
+		// 解析content, 看是否是一条私信消息
+		if strings.HasPrefix(sendMsg.Content, "@") {
+			sendMsg.To = strings.SplitN(sendMsg.Content, " ", 2)[0][1:]
+		}
 
 		// 解析content 看看@了谁
 		req := regexp.MustCompile(`@[^\s@]{2,20}`)

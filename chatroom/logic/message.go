@@ -26,6 +26,9 @@ type Message struct {
 
 	ClientSendTime time.Time `json:"client_send_time"`
 
+	//消息发给谁，表明这是一条私信
+	To string `json:"to"`
+
 	//消息@了谁
 	Act []string `json:"act"`
 
