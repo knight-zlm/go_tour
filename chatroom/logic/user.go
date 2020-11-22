@@ -38,8 +38,7 @@ type User struct {
 	isNew bool
 }
 
-//func NewUser(conn *websocket.Conn, token, nickName, addr string) *User {
-func NewUser(conn *websocket.Conn, nickName, addr string) *User {
+func NewUser(conn *websocket.Conn, token, nickName, addr string) *User {
 	user := &User{
 		UID:         0,
 		NickName:    nickName,
@@ -51,17 +50,17 @@ func NewUser(conn *websocket.Conn, nickName, addr string) *User {
 	}
 
 	// 老用户
-	//if user.Token != "" {
-	//	uid, err := parseTokenAndValidate(token, nickName)
-	//	if err == nil {
-	//		user.UID = uid
-	//	}
-	//}
+	if user.Token != "" {
+		uid, err := parseTokenAndValidate(token, nickName)
+		if err == nil {
+			user.UID = uid
+		}
+	}
 
 	// 新用户
 	if user.UID == 0 {
 		user.UID = int(atomic.AddUint32(&globalUID, 1))
-		//user.Token = genToken(user.UID, user.NickName)
+		user.Token = genToken(user.UID, user.NickName)
 		user.isNew = true
 	}
 
@@ -135,8 +134,21 @@ func parseTokenAndValidate(token, nickName string) (int, error) {
 }
 
 func validateMAC(message, messageMAC, secret []byte) bool {
+	expectedMac := macSha256(message, secret)
+	return hmac.Equal(expectedMac, messageMAC)
+}
+
+func genToken(uid int, nickname string) string {
+	secret := viper.GetString("token-secret")
+	message := fmt.Sprintf("%s%s%d", nickname, secret, uid)
+
+	messageMAC := macSha256([]byte(message), []byte(secret))
+
+	return fmt.Sprintf("%suid%d", base64.StdEncoding.EncodeToString(messageMAC), uid)
+}
+
+func macSha256(message, secret []byte) []byte {
 	mac := hmac.New(sha256.New, secret)
 	mac.Write(message)
-	expectedMac := mac.Sum(nil)
-	return hmac.Equal(expectedMac, messageMAC)
+	return mac.Sum(nil)
 }
