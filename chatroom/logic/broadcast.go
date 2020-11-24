@@ -40,6 +40,9 @@ func (b *broadcaster) Start() {
 			b.users[user.NickName] = user
 
 			b.sendUserList()
+
+			// 处理离线消息
+			OfflineProcessor.Send(user)
 		case user := <-b.leavingChan:
 			//用户离开
 			delete(b.users, user.NickName)
@@ -55,6 +58,8 @@ func (b *broadcaster) Start() {
 						continue
 					}
 					user.MessageChan <- msg
+					//保存离线消息
+					OfflineProcessor.Save(msg)
 				}
 			} else {
 				if user, ok := b.users[msg.To]; ok {

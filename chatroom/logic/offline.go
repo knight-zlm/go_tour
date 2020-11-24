@@ -27,3 +27,48 @@ func newOfflineProcessor() *offlineProcessor {
 		userRing:   make(map[string]*ring.Ring),
 	}
 }
+
+func (o *offlineProcessor) Save(msg *Message) {
+	if msg.Type != MsgTypeNormal {
+		return
+	}
+
+	// 保存数据，然后移动指针到下一位
+	o.recentRing.Value = msg
+	o.recentRing = o.recentRing.Next()
+
+	for _, nickname := range msg.Act {
+		nickname = nickname[1:]
+		var (
+			r  *ring.Ring
+			ok bool
+		)
+		if r, ok = o.userRing[nickname]; !ok {
+			r = ring.New(o.n)
+			r.Value = msg
+			o.userRing[nickname] = r.Next()
+		}
+	}
+}
+
+func (o *offlineProcessor) Send(user *User) {
+	o.recentRing.Do(func(value interface{}) {
+		if value != nil {
+			user.MessageChan <- value.(*Message)
+		}
+	})
+
+	if user.isNew {
+		return
+	}
+
+	if r, ok := o.userRing[user.NickName]; ok {
+		r.Do(func(value interface{}) {
+			if value != nil {
+				user.MessageChan <- value.(*Message)
+			}
+		})
+
+		delete(o.userRing, user.NickName)
+	}
+}
