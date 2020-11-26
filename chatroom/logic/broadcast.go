@@ -1,6 +1,10 @@
 package logic
 
-import "log"
+import (
+	"log"
+
+	"github.com/knight-zlm/chatroom/global"
+)
 
 //broadcaster 广播器
 type broadcaster struct {
@@ -80,7 +84,18 @@ func (b *broadcaster) Start() {
 
 //刷新用户列表信息
 func (b *broadcaster) sendUserList() {
+	userList := make([]*User, 0, len(b.users))
+	for _, user := range b.users {
+		userList = append(userList, user)
+	}
 
+	go func() {
+		if len(b.messageChan) < global.MessageQueueLen {
+			b.messageChan <- NewUserListMessage(userList)
+		} else {
+			log.Println("消息并发量过大，导致MessageChannel拥堵。。。")
+		}
+	}()
 }
 
 // 判断是否可以进入聊天室（昵称是否重复）

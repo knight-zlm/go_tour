@@ -33,8 +33,8 @@ type Message struct {
 	Act []string `json:"act"`
 
 	// 用户列表
-	Users map[string]*User `json:"users"`
-	//Users []*User `json:"users"`
+	//Users map[string]*User `json:"users"`
+	Users []*User `json:"users"`
 }
 
 func NewMessage(user *User, content, clientTime string) *Message {
@@ -49,6 +49,13 @@ func NewMessage(user *User, content, clientTime string) *Message {
 		message.ClientSendTime = time.Unix(0, cast.ToInt64(clientTime))
 	}
 
+	return message
+}
+
+func NewUserListMessage(users []*User) *Message {
+	message := &Message{
+		Users: users,
+	}
 	return message
 }
 
