@@ -98,6 +98,12 @@ func (b *broadcaster) sendUserList() {
 	}()
 }
 
+// 获取当前用户列表
+func (b *broadcaster) GetUserList() []*User {
+	b.requestUsersChan <- struct{}{}
+	return <-b.usersChan
+}
+
 // 判断是否可以进入聊天室（昵称是否重复）
 func (b *broadcaster) CanEnterRoom(nickname string) bool {
 	b.checkUserChan <- nickname
