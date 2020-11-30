@@ -1,10 +1,21 @@
 package logic
 
 import (
+	"expvar"
+	"fmt"
 	"log"
 
 	"github.com/knight-zlm/chatroom/global"
 )
+
+func init() {
+	expvar.Publish("message_queue", expvar.Func(calcMessageQueueLen))
+}
+
+func calcMessageQueueLen() interface{} {
+	fmt.Println("===len=:", len(Broadcaster.messageChan))
+	return len(Broadcaster.messageChan)
+}
 
 //broadcaster 广播器
 type broadcaster struct {
@@ -43,7 +54,7 @@ func (b *broadcaster) Start() {
 			//新用户进入
 			b.users[user.NickName] = user
 
-			b.sendUserList()
+			//b.sendUserList()
 
 			// 处理离线消息
 			OfflineProcessor.Send(user)
@@ -53,7 +64,7 @@ func (b *broadcaster) Start() {
 			//避免goroutine泄漏
 			user.CloseMessageChan()
 
-			b.sendUserList()
+			//b.sendUserList()
 		case msg := <-b.messageChan:
 			if msg.To == "" {
 				//给所有在线的用户发消息
@@ -78,6 +89,13 @@ func (b *broadcaster) Start() {
 			} else {
 				b.checkUserCanInChan <- true
 			}
+		case <-b.requestUsersChan:
+			userList := make([]*User, 0, len(b.users))
+			for _, user := range b.users {
+				userList = append(userList, user)
+			}
+
+			b.usersChan <- userList
 		}
 	}
 }
@@ -113,12 +131,11 @@ func (b *broadcaster) CanEnterRoom(nickname string) bool {
 
 // 广播消息
 func (b *broadcaster) Broadcast(msg *Message) {
-	if len(b.messageChan) > 1024 {
+	if len(b.messageChan) >= global.MessageQueueLen {
 		log.Println("消息满了")
 	}
 
 	b.messageChan <- msg
-	return
 }
 
 // 用户进入通知

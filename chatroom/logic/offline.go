@@ -45,9 +45,9 @@ func (o *offlineProcessor) Save(msg *Message) {
 		)
 		if r, ok = o.userRing[nickname]; !ok {
 			r = ring.New(o.n)
-			r.Value = msg
-			o.userRing[nickname] = r.Next()
 		}
+		r.Value = msg
+		o.userRing[nickname] = r.Next()
 	}
 }
 
