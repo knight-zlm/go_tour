@@ -56,16 +56,39 @@ func (f *fifo) Set(key string, value interface{}) {
 }
 
 func (f *fifo) Get(key string) interface{} {
-	return struct {
-	}{}
+	if e, ok := f.cache[key]; ok {
+		return e.Value.(*entry).value
+	}
+
+	return nil
 }
 
 func (f *fifo) Del(key string) {
+	if e, ok := f.cache[key]; ok {
+		f.removeElement(e)
+	}
 }
 
 func (f *fifo) DelOldest() {
+	f.removeElement(f.ll.Front())
 }
 
 func (f *fifo) Len() int {
-	return 0
+	return f.ll.Len()
+}
+
+func (f *fifo) removeElement(e *list.Element) {
+	if e == nil {
+		return
+	}
+
+	f.ll.Remove(e)
+	en := e.Value.(*entry)
+	f.usedBytes -= en.Len()
+	delete(f.cache, en.key)
+
+	// 删除时做额外操作
+	if f.onEvicted != nil {
+		f.onEvicted(en.key, en.value)
+	}
 }
