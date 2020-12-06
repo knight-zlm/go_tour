@@ -1,6 +1,10 @@
 package lfu
 
-import "github.com/knight-zlm/cache"
+import (
+	"container/heap"
+
+	"github.com/knight-zlm/cache"
+)
 
 type entry struct {
 	key    string
@@ -44,4 +48,10 @@ func (q *queue) Pop() interface{} {
 	en.index = -1  // for safety
 	*q = old[0 : n-1]
 	return en
+}
+
+func (q *queue) update(en *entry, value interface{}, weight int) {
+	en.value = value
+	en.weight = weight
+	heap.Fix(q, en.index)
 }
