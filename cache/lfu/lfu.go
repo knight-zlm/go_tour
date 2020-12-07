@@ -68,13 +68,26 @@ func (l *lfu) Del(key string) {
 }
 
 func (l *lfu) DelOldest() {
-
+	if l.queue.Len() == 0 {
+		return
+	}
+	l.removeElement(heap.Pop(l.queue))
 }
 
 func (l *lfu) removeElement(x interface{}) {
+	if x == nil {
+		return
+	}
 
+	en := x.(*entry)
+	delete(l.cache, en.key)
+	l.usedBytes -= en.Len()
+	if l.onEvicted != nil {
+		l.onEvicted(en.key, en.value)
+	}
 }
 
+// Len 会返回当前cache中的记录数
 func (l *lfu) Len() int {
-	return 0
+	return l.queue.Len()
 }
