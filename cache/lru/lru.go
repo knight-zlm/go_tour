@@ -1,4 +1,4 @@
-package lifo
+package lru
 
 import (
 	"container/list"
@@ -6,7 +6,7 @@ import (
 	"github.com/knight-zlm/cache"
 )
 
-type fifo struct {
+type lru struct {
 	// 缓存最大的容量，单位字节
 	// groupcache 使用的是最大存放 entry 个数
 	maxBytes int
@@ -29,7 +29,7 @@ func (e *entry) Len() int {
 }
 
 func New(maxBytes int, onEvicted func(string, interface{})) cache.Cache {
-	return &fifo{
+	return &lru{
 		maxBytes:  maxBytes,
 		onEvicted: onEvicted,
 		ll:        list.New(),
@@ -37,59 +37,59 @@ func New(maxBytes int, onEvicted func(string, interface{})) cache.Cache {
 	}
 }
 
-func (f *fifo) Set(key string, value interface{}) {
-	if e, ok := f.cache[key]; ok {
-		f.ll.MoveToBack(e)
+func (l *lru) Set(key string, value interface{}) {
+	if e, ok := l.cache[key]; ok {
+		l.ll.MoveToBack(e)
 		en := e.Value.(*entry)
-		f.usedBytes = f.usedBytes - cache.CalcLen(en.value) + cache.CalcLen(value)
+		l.usedBytes = l.usedBytes - cache.CalcLen(en.value) + cache.CalcLen(value)
 		en.value = value
 		return
 	}
 
 	en := &entry{key: key, value: value}
-	e := f.ll.PushBack(en)
-	f.cache[key] = e
-
-	f.usedBytes += en.Len()
-	if f.maxBytes > 0 && f.usedBytes > f.maxBytes {
-		f.DelOldest()
+	e := l.ll.PushBack(en)
+	l.cache[key] = e
+	l.usedBytes += en.Len()
+	if l.maxBytes > 0 && l.usedBytes > l.maxBytes {
+		l.DelOldest()
 	}
 }
 
-func (f *fifo) Get(key string) interface{} {
-	if e, ok := f.cache[key]; ok {
+func (l *lru) Get(key string) interface{} {
+	if e, ok := l.cache[key]; ok {
+		l.ll.MoveToBack(e)
 		return e.Value.(*entry).value
 	}
 
 	return nil
 }
 
-func (f *fifo) Del(key string) {
-	if e, ok := f.cache[key]; ok {
-		f.removeElement(e)
+func (l *lru) Del(key string) {
+	if e, ok := l.cache[key]; ok {
+		l.removeElement(e)
 	}
 }
 
-func (f *fifo) DelOldest() {
-	f.removeElement(f.ll.Front())
+func (l *lru) DelOldest() {
+	l.removeElement(l.ll.Front())
 }
 
-func (f *fifo) Len() int {
-	return f.ll.Len()
+func (l *lru) Len() int {
+	return l.ll.Len()
 }
 
-func (f *fifo) removeElement(e *list.Element) {
+func (l *lru) removeElement(e *list.Element) {
 	if e == nil {
 		return
 	}
 
-	f.ll.Remove(e)
+	l.ll.Remove(e)
 	en := e.Value.(*entry)
-	f.usedBytes -= en.Len()
-	delete(f.cache, en.key)
+	l.usedBytes -= en.Len()
+	delete(l.cache, en.key)
 
 	// 删除时做额外操作
-	if f.onEvicted != nil {
-		f.onEvicted(en.key, en.value)
+	if l.onEvicted != nil {
+		l.onEvicted(en.key, en.value)
 	}
 }
