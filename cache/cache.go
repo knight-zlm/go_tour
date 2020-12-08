@@ -2,8 +2,12 @@ package cache
 
 import (
 	"fmt"
+	"log"
 	"runtime"
+	"sync"
 )
+
+const DefaultMaxBytes = 1 << 29
 
 type Cache interface {
 	Set(key string, value interface{})
@@ -15,6 +19,58 @@ type Cache interface {
 
 type Value interface {
 	Len() int
+}
+
+type safeCache struct {
+	m     sync.RWMutex
+	cache Cache
+
+	nHit int
+	nGet int
+}
+
+func newSafeCache(cache Cache) *safeCache {
+	return &safeCache{
+		cache: cache,
+	}
+}
+
+func (sc *safeCache) set(key string, value interface{}) {
+	sc.m.Lock()
+	defer sc.m.Unlock()
+
+	sc.cache.Set(key, value)
+}
+
+func (sc *safeCache) get(key string) interface{} {
+	sc.m.RLock()
+	defer sc.m.RUnlock()
+	sc.nGet++
+	if sc.cache == nil {
+		return nil
+	}
+	v := sc.cache.Get(key)
+	if v != nil {
+		log.Println("[TourCache] hit")
+		sc.nHit++
+	}
+
+	return v
+}
+
+func (sc *safeCache) state() *State {
+	sc.m.RLock()
+	defer sc.m.RUnlock()
+
+	return &State{
+		NHit: sc.nHit,
+		NGet: sc.nGet,
+	}
+}
+
+type State struct {
+	NHit int
+	NGet int
 }
 
 func CalcLen(value interface{}) int {
