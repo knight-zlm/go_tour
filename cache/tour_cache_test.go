@@ -1,10 +1,11 @@
-package cache
+package cache_test
 
 import (
 	"log"
 	"sync"
 	"testing"
 
+	"github.com/knight-zlm/cache"
 	"github.com/knight-zlm/cache/lru"
 	"github.com/matryer/is"
 )
@@ -19,7 +20,7 @@ func TestTourCache_Get(t *testing.T) {
 		"key6": "val6",
 		"key7": "val7",
 	}
-	getter := GetFun(func(key string) interface{} {
+	getter := cache.GetFun(func(key string) interface{} {
 		log.Println("[From DB] find key", key)
 
 		if val, ok := db[key]; ok {
@@ -28,7 +29,7 @@ func TestTourCache_Get(t *testing.T) {
 
 		return nil
 	})
-	tourCache := NewTourCache(getter, lru.New(0, nil))
+	tourCache := cache.NewTourCache(getter, lru.New(0, nil))
 
 	is := is.New(t)
 	var wg sync.WaitGroup
@@ -46,6 +47,6 @@ func TestTourCache_Get(t *testing.T) {
 	is.Equal(tourCache.Get("unknown"), nil)
 	is.Equal(tourCache.Get("unknown"), nil)
 
-	is.Equal(tourCache.Stat().NGet, 10)
-	is.Equal(tourCache.Stat().NHit, 4)
+	is.Equal(tourCache.Stat().NGet, 16)
+	is.Equal(tourCache.Stat().NHit, 7)
 }
