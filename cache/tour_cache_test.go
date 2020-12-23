@@ -50,3 +50,16 @@ func TestTourCache_Get(t *testing.T) {
 	is.Equal(tourCache.Stat().NGet, 16)
 	is.Equal(tourCache.Stat().NHit, 7)
 }
+
+//func BenchmarkTourFastCacheSetParallel(b *testing.B) {
+//	maxEntry := 100
+//	cache := fast.NewFastCache(b.N, maxEntry, nil)
+//	b.RunParallel(func(pb *testing.PB) {
+//		id := rand.Intn(100)
+//		counter := 0
+//		for pb.Next() {
+//			cache.Set(paralleKey(id, counter), value())
+//			counter++
+//		}
+//	})
+//}

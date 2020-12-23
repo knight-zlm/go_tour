@@ -27,3 +27,20 @@ func (f *fastCache) getShard(key string) *cacheShard {
 func (f *fastCache) Set(key string, value interface{}) {
 	f.getShard(key).set(key, value)
 }
+
+func (f *fastCache) Get(key string) interface{} {
+	return f.getShard(key).get(key)
+}
+
+func (f *fastCache) Del(key string) {
+	f.getShard(key).del(key)
+}
+
+func (f *fastCache) Len() int {
+	length := 0
+	for _, shard := range f.shards {
+		length += shard.len()
+	}
+
+	return length
+}
