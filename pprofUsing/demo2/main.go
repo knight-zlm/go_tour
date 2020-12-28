@@ -9,7 +9,10 @@ import (
 )
 
 func init() {
+	// 对互斥锁信息进行采集，小于0或不设置则不采集
 	runtime.SetMutexProfileFraction(1)
+	// 对阻塞情况进行采集，小于0或不设置则不采集
+	runtime.SetBlockProfileRate(1)
 }
 
 func main() {
