@@ -2,7 +2,7 @@ package main
 
 import "sync"
 
-//GODEBUG=schedtrace=1000 go run main.go
+//GODEBUG=scheddetail=1,schedtrace=1000 go run main.go
 func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(10)
