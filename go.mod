@@ -7,6 +7,7 @@ require (
 	github.com/elazarl/go-bindata-assetfs v1.0.1 // indirect
 	github.com/go-playground/validator/v10 v10.2.0 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/google/gops v0.3.14 // indirect
 	github.com/jinzhu/gorm v1.9.16 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/juju/ratelimit v1.0.1 // indirect
